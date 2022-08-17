@@ -1,0 +1,51 @@
+---
+swagger: "2.0"
+info:
+  description: "My REST API"
+  version: "1.0.0"
+  title: "My REST API"
+host: "localhost:8080"
+basePath: "/v2"
+tags:
+- name: "TextSummarization"
+  description: "Summarizer legal contract"
+schemes:
+- "http"
+paths:
+  /text:
+    post:
+      tags:
+      - "texts"
+      summary: "Add a new text"
+      description: ""
+      operationId: "add_text"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Text data"
+        required: true
+        schema:
+          $ref: "#/definitions/Text"
+      responses:
+        "405":
+          description: "Invalid input"
+      x-swagger-router-controller: "swagger_server.controllers.texts_controller"
+definitions:
+  Text:
+    type: "object"
+    required:
+    - "text"
+    properties:
+      text:
+        type: "string"
+        example: "Jim say something"
+    xml:
+      name: "Text"
+    example:
+      text: "Jim say something"
