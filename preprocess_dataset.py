@@ -1,13 +1,18 @@
 import json
 import os
 import pandas as pd
+import spacy
+from spacy.language import Language
+from spacy_language_detection import LanguageDetector
+
+def get_lang_detector(nlp, name):
+    return LanguageDetector(seed=42)  # We use the seed 42
 
 path_to_json = 'data/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
-print(json_files)
 
+# Get downloaded terms of services
 data = []
-
 for json_file in json_files:
     with open(path_to_json + json_file, 'r') as f:
         data.append(json.load(f))
@@ -19,6 +24,9 @@ for doc in data:
 
 # Create the summaries by merging the quotes
 final_data = []
+nlp_model = spacy.load('en_core_web_sm')
+Language.factory("language_detector", func=get_lang_detector)
+nlp_model.add_pipe('language_detector', last=True)
 
 for doc in reviewed_terms:
     legal_contracts = {}
@@ -36,7 +44,12 @@ for doc in reviewed_terms:
             plain_text += " " + point['quoteText']
             summary += ". " + point['title']
 
-        final_data.append([plain_text, summary])
+        # Regex preprocessing
+
+        # Language check
+        doc = nlp_model(plain_text)
+        if doc._.language['language'] == 'en':
+            final_data.append([plain_text, summary])
 
 df = pd.DataFrame(final_data, columns=['plain_text', 'summary'])
 df.to_json('dataset.json', orient='records', lines=True)
