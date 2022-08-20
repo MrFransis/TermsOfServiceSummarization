@@ -1,12 +1,15 @@
 import json
 import os
+import re
 import pandas as pd
 import spacy
 from spacy.language import Language
 from spacy_language_detection import LanguageDetector
 
+
 def get_lang_detector(nlp, name):
     return LanguageDetector(seed=42)  # We use the seed 42
+
 
 path_to_json = 'data/'
 json_files = [pos_json for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
@@ -37,14 +40,16 @@ for doc in reviewed_terms:
 
     for doc_id, value in legal_contracts.items():
         legal_contracts[doc_id] = sorted(value, key=lambda i: i['quoteStart'])
-
+        print(doc_id)
         plain_text = ""
         summary = ""
         for point in legal_contracts[doc_id]:
-            plain_text += " " + point['quoteText']
-            summary += ". " + point['title']
+            plain_text += point['quoteText'] + " "
+            summary += point['title'] + ". "
 
         # Regex preprocessing
+        plain_text = re.sub(r"<[^>]*>", '', plain_text)
+        plain_text = re.sub(r"\n", ' ', plain_text)
 
         # Language check
         doc = nlp_model(plain_text)
